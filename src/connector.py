@@ -13,6 +13,10 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googlea
 
 class GmailConnector:
     def __init__(self, messageSender):
+        self._mailFrom = None
+        self.sender = messageSender
+        self.send_messages = []
+
         creds = None
         # The file config/token.pickle stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
@@ -34,8 +38,13 @@ class GmailConnector:
 
         self.gmail = build('gmail', 'v1', credentials=creds)
 
-        self.sender = messageSender
-        self.send_messages = []
+    @property
+    def mailFrom(self):
+        return self._mailFrom
+
+    @mailFrom.setter
+    def mailFrom(self, value):
+        self._mailFrom = value
     
     def get_labels(self):
         results = self.gmail.users().labels().list(userId='me').execute()
@@ -59,6 +68,7 @@ class GmailConnector:
 
 if __name__ == '__main__':
     connector = GmailConnector(messageSender=messageSender)
-    mailTo = input("Enter mail to:")
-    msg = messageSender.CreateMessage('bogdanovsi884@gmail.com', mailTo, 'Python', "hello man Как дела")
+    connector.mailfFrom = 'bogdanovsi884@gmail.com'
+    mailTo = 'freekerrr@gmail.com'
+    msg = messageSender.CreateMessageWithAttachment(connector.mailfFrom, mailTo, 'Python', "hello man Как дела", '', filename='README.md')
     connector.send_message('me', msg)
