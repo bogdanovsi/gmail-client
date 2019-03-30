@@ -11,7 +11,6 @@ from email.mime.text import MIMEText
 
 from apiclient import errors
 
-
 def CreateMessage(sender, to, subject, message_text):
     message = MIMEText(message_text)
     message['to'] = to
@@ -46,7 +45,7 @@ def CreateMessageWithAttachment(sender, to, subject, message_text, file_dir,
     main_type, sub_type = content_type.split('/', 1)
     if main_type == 'text':
         fp = open(path, 'rb')
-        msg = MIMEText(fp.read(), _subtype=sub_type)
+        msg = MIMEText(fp.read(), _subtype=sub_type, _charset='utf-8')
         fp.close()
     elif main_type == 'image':
         fp = open(path, 'rb')
