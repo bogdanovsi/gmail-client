@@ -6,18 +6,19 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 import tkinter
+import messageSender
 
 # If modifying these scopes, delete the file config/token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.send']
 
 class GmailConnector:
-    def __init__(self):
+    def __init__(self, messageSender):
         creds = None
         # The file config/token.pickle stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
-        if os.path.exists('config/token.pickle'):
-            with open('config/token.pickle', 'rb') as token:
+        if os.path.exists('configs/token.pickle'):
+            with open('configs/token.pickle', 'rb') as token:
                 creds = pickle.load(token)
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
@@ -32,8 +33,11 @@ class GmailConnector:
                 pickle.dump(creds, token)
 
         self.gmail = build('gmail', 'v1', credentials=creds)
+
+        self.sender = messageSender
+        self.send_messages = []
     
-    def labels(self):
+    def get_labels(self):
         results = self.gmail.users().labels().list(userId='me').execute()
         labels = results.get('labels', [])
 
@@ -44,6 +48,17 @@ class GmailConnector:
             for label in labels:
                 print(label['name'])
 
+    def get_list_message(self):
+        response = self.gmail.users().messages().list(userId='me').execute()
+        messages = response.get('messages', [])
+        return messages
+
+    def send_message(self, userId, message):
+        self.send_messages.append(message)
+        self.sender.sendMessage(self.gmail, userId, message)
+
 if __name__ == '__main__':
-    connector = GmailConnector()
-    connector.labels()
+    connector = GmailConnector(messageSender=messageSender)
+    mailTo = input("Enter mail to:")
+    msg = messageSender.CreateMessage('bogdanovsi884@gmail.com', mailTo, 'Python', "hello man Как дела")
+    connector.send_message('me', msg)
