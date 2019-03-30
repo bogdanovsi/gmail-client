@@ -1,8 +1,8 @@
-import tkinter as tk
 
+import tkinterController as tkHelper
 import messageSender
 from connector import GmailConnector
-
+import tkinter as tk
 from tkinter import Tk, Text, TOP, BOTH, X, N, LEFT
 from tkinter.ttk import Frame, Label, Entry, Button
 from tkinter.filedialog import askopenfilename
@@ -18,41 +18,44 @@ class Application(tk.Frame):
         self.master.geometry("600x400")
         self.create_ui_input_msg()
 
+    @property
+    def attachment_file_path(self):
+        return self._attach_file_path
+
+    @attachment_file_path.setter
+    def attachment_file_path(self, path):
+        self._attach_file_path = path
+        if self._attach_file_lbl is not None:
+            self._attach_file_lbl.configure(text=path)
+
     def create_ui_input_msg(self):
         self.pack(fill=BOTH, expand=True)
-        self.entry_mail_to = self.create_inline_field("Mail to:")
-        self.entry_subject = self.create_inline_field("Subject:")
-        self.entry_message = self.create_inline_field("Message:")
+        self.entry_mail_to = tkHelper.create_inline_field(self, "Mail to:")[2]
+        self.entry_subject = tkHelper.create_inline_field(self, "Subject:")[2]
+        self.entry_message = tkHelper.create_textarea_field(self, "Message:")[2]
 
         # create button attachment
-        self.craeate_button_attachment("Выберите файл")
-        self.btn_send = self.craeate_button_attachment("Отправить")
-        self.btn_send.configure(command=self.send_msg)
+        self.craeate_field_attachment("Выберите файл")
+        self.btn_send = Button(self.master, text="Отправить", command=self.send_msg, width=9)
+        self.btn_send.pack(side=LEFT, padx=5, pady=5, ipadx=3)
 
-    def create_inline_field(self, label):
+    
+    def craeate_field_attachment(self, text_btn):
         frame = Frame(self)
         frame.pack(fill=X)
-        
-        lbl = Label(frame, text=label, width=10)
-        lbl.pack(side=LEFT, padx=5, pady=5)           
-       
-        entry = Entry(frame)
-        entry.pack(fill=X, padx=5, expand=True)
 
-        return entry
-
-    def craeate_button_attachment(self, text_btn):
-        btn = Button(self.master, text=text_btn, command = self.chose_file)
+        btn = Button(frame, text=text_btn, command = self.chose_file)
         btn.pack(side=LEFT, padx=5, pady=5)
-        return btn
+
+        self._attach_file_lbl = Label(frame)
+        self._attach_file_lbl.pack(fill=X, padx=5, expand=True)
 
     def chose_file(self):
-        path = askopenfilename(initialdir="C:/Users/Batman/Documents/Programming/tkinter/",
-                           filetypes =(("Text File", "*.txt"),("All Files","*.*")),
+        path = askopenfilename(initialdir="C:/Users/",
+                           filetypes = [("All Files","*.*")],
                            title = "Choose a file."
                            )
-        self.attach_file_path = path
-        print (path)
+        self.attachment_file_path = path
 
     def send_msg(self):
         mail = self.create_mail()
@@ -63,7 +66,7 @@ class Application(tk.Frame):
         subject = self.entry_subject.get()
         msg = self.entry_message.get()
         if self.attach_file_path is not None:
-            return messageSender.CreateMessageWithAttachment(self.gmailConnector.mailFrom, mail_to, subject, msg, '', self.attach_file_path)
+            return messageSender.CreateMessageWithAttachment(self.gmailConnector.mailFrom, mail_to, subject, msg, '', self.attachment_file_path)
         else:
             return messageSender.CreateMessage(self.gmailConnector.mailFrom, mail_to, subject, msg)
 
