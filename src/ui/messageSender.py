@@ -12,12 +12,17 @@ from email.mime.text import MIMEText
 from apiclient import errors
 
 def CreateMessage(sender, to, subject, message_text):
+    # base64_content = base64.urlsafe_b64encode(message.as_bytes()).decode()
     message = MIMEText(message_text)
     message['to'] = to
     message['from'] = sender
     message['subject'] = subject
-    base64_content = base64.urlsafe_b64encode(message.as_bytes()).decode()
-    return {'raw': base64_content }
+
+    bytes_message = message.as_bytes()
+    base64_obj = base64.urlsafe_b64encode(bytes_message)
+    base64_str = base64_obj.decode()
+
+    return {'raw': base64_str }
 
 def sendMessage(service, user_id, message):
     try:

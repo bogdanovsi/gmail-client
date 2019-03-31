@@ -5,11 +5,11 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
-import tkinter
 import messageSender
 
 # If modifying these scopes, delete the file config/token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.send']
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly',
+             'https://www.googleapis.com/auth/gmail.send']
 
 class GmailConnector:
     def __init__(self, messageSender):
