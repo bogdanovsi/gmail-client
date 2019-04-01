@@ -1,8 +1,7 @@
-
-
 class MessageHandler:
     def __init__(self, context):
         self.context = context
+        self._attachment_file = None
 
     @property
     def mail_to(self):

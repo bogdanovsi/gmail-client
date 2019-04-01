@@ -1,6 +1,7 @@
 from __future__ import print_function
 import pickle
 import os.path
+import json
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -8,8 +9,7 @@ from google.auth.transport.requests import Request
 import messageSender
 
 # If modifying these scopes, delete the file config/token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly',
-             'https://www.googleapis.com/auth/gmail.send']
+SCOPES = ['https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.send']
 
 class GmailConnector:
     def __init__(self, messageSender):
@@ -46,21 +46,23 @@ class GmailConnector:
     def mailFrom(self, value):
         self._mailFrom = value
     
-    def get_labels(self):
-        results = self.gmail.users().labels().list(userId='me').execute()
+    async def get_labels(self, label):
+        results = self.gmail.users().labels().list(userId='me', labelIds=label).execute()
         labels = results.get('labels', [])
+        return labels
 
-        if not labels:
-            print('No labels found.')
-        else:
-            print('Labels:')
-            for label in labels:
-                print(label['name'])
+    async def get_message(self, msg_id):
+        message = self.gmail.users().messages().get(userId='me', id=msg_id).execute()
+        # messages = response.get('messages', [])
+        return json.dumps(message)
 
-    def get_list_message(self):
-        response = self.gmail.users().messages().list(userId='me').execute()
+    async def get_list_messages(self, count, label):
+        response = self.gmail.users().messages().list(userId='me', maxResults=count, labelIds=label).execute()
         messages = response.get('messages', [])
         return messages
+
+    def delete_msg(self, id):
+        self.gmail.users().messages().delete(userId='me', id=id).execute()
 
     def send_message(self, userId, message):
         self.send_messages.append(message)

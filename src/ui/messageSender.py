@@ -66,7 +66,9 @@ def CreateMessageWithAttachment(sender, to, subject, message_text, file_dir,
         msg.set_payload(fp.read())
         fp.close()
 
-    msg.add_header('Content-Disposition', 'attachment', filename=filename)
+    name = os.path.basename(path)
+
+    msg.add_header('Content-Disposition', 'attachment', filename=name)
     message.attach(msg)
     base64_content = base64.urlsafe_b64encode(message.as_bytes()).decode()
     return {'raw': base64_content }
